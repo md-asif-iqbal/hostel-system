@@ -29,7 +29,7 @@ async function run() {
     app.get("/review", async (req, res) => {
       const query = req.body;
       const review = await reviewsCollections.find(query).toArray();
-      res.send(review);
+      res.send(review)
     });
   } finally {
   }
