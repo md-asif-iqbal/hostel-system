@@ -2,11 +2,11 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require("cors");
-require("dotenv").config()
+require("dotenv").config();
 app.use(express.json());
 app.use(cors());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.imtr4p9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -25,11 +25,19 @@ async function run() {
       res.send(products);
     });
 
+    // Purchase Api
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const productId = await productCollections.findOne(query);
+      res.send(productId);
+    });
+
     // Reviews
     app.get("/review", async (req, res) => {
       const query = req.body;
       const review = await reviewsCollections.find(query).toArray();
-      res.send(review)
+      res.send(review);
     });
   } finally {
   }
