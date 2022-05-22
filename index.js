@@ -39,11 +39,13 @@ async function run() {
       res.send(review);
     });
     // Orders Collection
-    app.post("/order", async (req, res) => {
+    app.post("/myOrders", async (req, res) => {
       const query = req.body;
-      const orders = await ordersCollections.insertOne(query);
-      res.send(orders);
+      const order = await ordersCollections.insertOne(query);
+      res.send(order);
     });
+
+
   } finally {
   }
 }
