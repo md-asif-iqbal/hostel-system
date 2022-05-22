@@ -25,15 +25,13 @@ async function run() {
       const products = await productCollections.find(query).toArray();
       res.send(products);
     });
-
     // Purchase Api
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const productId = await productCollections.findOne(query);
       res.send(productId);
-    });
-
+    })
     // Reviews
     app.get("/review", async (req, res) => {
       const query = req.body;
