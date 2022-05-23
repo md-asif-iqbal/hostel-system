@@ -31,7 +31,26 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const productId = await productCollections.findOne(query);
       res.send(productId);
-    })
+    });
+    app.put("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const newstock = req.body;
+      const newMinorder = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          stock: newstock.stock,
+          minorder: newMinorder.minorder,
+        },
+      };
+      const updateStock = await productCollections.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(updateStock);
+    });
     // Reviews
     app.get("/review", async (req, res) => {
       const query = req.body;
@@ -44,12 +63,11 @@ async function run() {
       const order = await ordersCollections.insertOne(query);
       res.send(order);
     });
-    app.get('/myOrders', async(req, res) => {
+    app.get("/myOrders", async (req, res) => {
       const query = req.body;
       const orders = await ordersCollections.find(query).toArray();
-      res.send(orders)
-    })
-
+      res.send(orders);
+    });
   } finally {
   }
 }
