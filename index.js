@@ -113,7 +113,7 @@ async function run() {
         { expiresIn: "1d" }
       );
       res.send({ result, token });
-    });
+    })
   } finally {
   }
 }
