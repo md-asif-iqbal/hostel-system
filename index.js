@@ -184,6 +184,14 @@ async function run() {
       const isAdmin = user.role === "admin";
       res.send({ admin: isAdmin });
     });
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({ email: email });
+      const isAdmin = user.role !== "admin";
+      res.send({ admin: isAdmin });
+    });
+
     // Add Products Api
     app.post("/products", async (req, res) => {
       const query = req.body;
