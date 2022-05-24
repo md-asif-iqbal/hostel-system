@@ -40,6 +40,8 @@ async function run() {
     const reviewsCollections = client.db("manufacturer").collection("reviews");
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
+    const paymentCollection = client.db("manufacturer").collection("payment");
+
 
     // Get All Products
     app.get("/products", async (req, res) => {
@@ -188,7 +190,7 @@ async function run() {
       const addProducts = await productCollections.insertOne(query);
       res.send(addProducts);
     });
-    // intent a payment 
+    // intent a payment
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const service = req.body;
       const price = service.price;
@@ -199,6 +201,24 @@ async function run() {
         payment_method_types: ["card"],
       });
       res.send({ clientSecret: paymentIntent.client_secret });
+    });
+    app.patch("/myOrders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+
+      const result = await paymentCollection.insertOne(payment);
+      const updateOrder = await ordersCollections.updateOne(
+        filter,
+        updatedDoc
+      );
+      res.send(updateOrder);
     });
   } finally {
   }
