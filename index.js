@@ -5,7 +5,7 @@ const cors = require("cors");
 require("dotenv").config();
 app.use(express.json());
 app.use(cors());
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 // Database connection
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -107,7 +107,12 @@ async function run() {
         updateDoc,
         options
       );
-      res.send(result);
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1d" }
+      );
+      res.send({ result, token });
     });
   } finally {
   }
