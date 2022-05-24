@@ -40,6 +40,19 @@ async function run() {
     const reviewsCollections = client.db("manufacturer").collection("reviews");
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
+
+    // const verifyAdmin = async (req, res, next) => {
+    //   const requester = req.decoded.email;
+    //   const requesterAccount = await usersCollection.findOne({
+    //     email: requester,
+    //   });
+    //   if (requesterAccount.role === "admin") {
+    //     next();
+    //   } else {
+    //     res.status(403).send({ message: "forbidden" });
+    //   }
+    // };
+
     app.get("/products", async (req, res) => {
       const query = req.body;
       const products = await productCollections.find(query).toArray();
@@ -136,11 +149,22 @@ async function run() {
       );
       res.send({ result, token });
     });
-  // get users 
-  app.get('/user', async(req, res) => {
-    const users = await usersCollection.find().toArray();
-    res.send(users)
-  })
+    // get users
+    app.get("/user", verifyJWT, async (req, res) => {
+      const users = await usersCollection.find().toArray();
+      res.send(users);
+    });
+
+    // Admin Api
+    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: "admin" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
   } finally {
   }
 }
