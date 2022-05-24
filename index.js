@@ -9,6 +9,7 @@ app.use(cors());
 
 // Database connection
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { get } = require("express/lib/response");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.imtr4p9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -135,6 +136,11 @@ async function run() {
       );
       res.send({ result, token });
     });
+  // get users 
+  app.get('/user', async(req, res) => {
+    const users = await usersCollection.find().toArray();
+    res.send(users)
+  })
   } finally {
   }
 }
