@@ -41,18 +41,6 @@ async function run() {
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
 
-    // const verifyAdmin = async (req, res, next) => {
-    //   const requester = req.decoded.email;
-    //   const requesterAccount = await usersCollection.findOne({
-    //     email: requester,
-    //   });
-    //   if (requesterAccount.role === "admin") {
-    //     next();
-    //   } else {
-    //     res.status(403).send({ message: "forbidden" });
-    //   }
-    // };
-
     app.get("/products", async (req, res) => {
       const query = req.body;
       const products = await productCollections.find(query).toArray();
@@ -65,6 +53,7 @@ async function run() {
       const productId = await productCollections.findOne(query);
       res.send(productId);
     });
+
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
       const newstock = req.body;
@@ -168,7 +157,7 @@ async function run() {
         res.status(403).send({ message: "forbidden" });
       }
     };
-  //  set Admin 
+    //  set Admin
     app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
@@ -178,13 +167,19 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    // admin 
-    app.get('/admin/:email', async (req, res) => {
+    // admin
+    app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await usersCollection.findOne({ email: email });
-      const isAdmin = user.role === 'admin';
-      res.send({ admin: isAdmin })
-    })
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
+    });
+    // Add Products Api
+    app.post("/products", async (req, res) => {
+      const query = req.body;
+      const addProducts = await productCollections.insertOne(query);
+      res.send(addProducts);
+    });
   } finally {
   }
 }
