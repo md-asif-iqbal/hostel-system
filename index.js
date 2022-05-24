@@ -16,6 +16,22 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// verify jwt token
+
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "UnAuthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 async function run() {
   try {
     await client.connect();
@@ -79,12 +95,17 @@ async function run() {
       res.send(orders);
     });
     // ordersCollections find order email address
-    app.get("/myitems", async (req, res) => {
+    app.get("/myitems", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      const query = { email: email };
-      const cursor = ordersCollections.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
+      const decodedEmail = req.decoded.email;
+      if (email === decodedEmail) {
+        const query = { email: email };
+        const cursor = ordersCollections.find(query);
+        const result = await cursor.toArray();
+        return res.send(result);
+      } else {
+        return res.status(403).send({ message: "forbidden access" });
+      }
     });
     // Delet user orders
     app.delete("/myOrders/:id", async (req, res) => {
@@ -113,7 +134,7 @@ async function run() {
         { expiresIn: "1d" }
       );
       res.send({ result, token });
-    })
+    });
   } finally {
   }
 }
