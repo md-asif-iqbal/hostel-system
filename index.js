@@ -6,7 +6,7 @@ require("dotenv").config();
 app.use(express.json());
 const jwt = require("jsonwebtoken");
 app.use(cors());
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // Database connection
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { get } = require("express/lib/response");
@@ -112,12 +112,12 @@ async function run() {
       }
     });
 
-    app.get('/myOrders/:id', verifyJWT, async(req, res) =>{
+    app.get("/myOrders/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const query = {_id: ObjectId(id)};
+      const query = { _id: ObjectId(id) };
       const booking = await ordersCollections.findOne(query);
       res.send(booking);
-    })
+    });
     // Delet user orders
     app.delete("/myOrders/:id", async (req, res) => {
       const id = req.params.id;
@@ -187,6 +187,18 @@ async function run() {
       const query = req.body;
       const addProducts = await productCollections.insertOne(query);
       res.send(addProducts);
+    });
+    // intent a payment 
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const service = req.body;
+      const price = service.price;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
     });
   } finally {
   }
