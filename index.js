@@ -41,6 +41,7 @@ async function run() {
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
 
+    // Get All Products
     app.get("/products", async (req, res) => {
       const query = req.body;
       const products = await productCollections.find(query).toArray();
@@ -53,7 +54,7 @@ async function run() {
       const productId = await productCollections.findOne(query);
       res.send(productId);
     });
-
+    // Update Products
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
       const newstock = req.body;
@@ -110,6 +111,13 @@ async function run() {
         return res.status(403).send({ message: "forbidden access" });
       }
     });
+
+    app.get('/myOrders/:id', verifyJWT, async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)};
+      const booking = await ordersCollections.findOne(query);
+      res.send(booking);
+    })
     // Delet user orders
     app.delete("/myOrders/:id", async (req, res) => {
       const id = req.params.id;
