@@ -4,8 +4,8 @@ const port = process.env.PORT || 5000;
 const cors = require("cors");
 require("dotenv").config();
 app.use(express.json());
-app.use(cors());
 const jwt = require("jsonwebtoken");
+app.use(cors());
 
 // Database connection
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
