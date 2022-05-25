@@ -225,6 +225,13 @@ async function run() {
       const profile = await myProfileCollection.insertOne(query);
       res.send(profile);
     });
+    // my profile data loaded
+    app.get("/myProfile/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const profileId = await myProfileCollection.findOne(query);
+      res.send(profileId);
+    });
   } finally {
   }
 }
