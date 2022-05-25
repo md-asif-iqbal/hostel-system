@@ -218,25 +218,6 @@ async function run() {
       const updateOrder = await ordersCollections.updateOne(filter, updatedDoc);
       res.send(updateOrder);
     });
-
-    // My profile
-    app.post("/myProfile", async (req, res) => {
-      const query = req.body;
-      const profile = await myProfileCollection.insertOne(query);
-      res.send(profile);
-    });
-    // my profile data loaded
-    app.get("/myProfile/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const profileId = await myProfileCollection.findOne(query);
-      res.send(profileId);
-    });
-    app.get('/myProfile', async(req, res) => {
-      const query = req.body;
-      const profile = await myProfileCollection.find(query).toArray();
-      res.send(profile);
-    })
   } finally {
   }
 }
