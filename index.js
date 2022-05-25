@@ -58,6 +58,12 @@ async function run() {
       const productId = await productCollections.findOne(query);
       res.send(productId);
     });
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const deletProduct = await productCollections.deleteOne(query);
+      res.send(deletProduct);
+    });
     // Update Products
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
