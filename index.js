@@ -68,7 +68,7 @@ async function run() {
           stock: newQuantity.quantity,
           minorder: newMinOrder.min
         },
-      };
+      }
       const updateStock = await productCollections.updateOne(
         filter,
         updatedDoc,
