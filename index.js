@@ -232,6 +232,11 @@ async function run() {
       const profileId = await myProfileCollection.findOne(query);
       res.send(profileId);
     });
+    app.get('/myProfile', async(req, res) => {
+      const query = req.body;
+      const profile = await myProfileCollection.find(query).toArray();
+      res.send(profile);
+    })
   } finally {
   }
 }
