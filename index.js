@@ -65,7 +65,6 @@ async function run() {
       const updatedDoc = {
         $set: {
           stock: newQuantity.quantity,
-          minorder: newQuantity.min
         }
       }
       const updateStock = await productCollections.updateOne(
