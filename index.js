@@ -59,14 +59,13 @@ async function run() {
     // Update Products
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const newstock = req.body;
-      const newMinorder = req.body;
+      const newQuantity = req.body;
+
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          stock: newstock.stock,
-          minorder: newMinorder.minorder,
+          stock: newQuantity.quantity,
         },
       };
       const updateStock = await productCollections.updateOne(
@@ -74,6 +73,7 @@ async function run() {
         updatedDoc,
         options
       );
+
       res.send(updateStock);
     });
     // Reviews
@@ -184,14 +184,6 @@ async function run() {
       const isAdmin = user.role === "admin";
       res.send({ admin: isAdmin });
     });
-
-    app.get("/user/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = await usersCollection.findOne({ email: email });
-      const isAdmin = user.role !== "admin";
-      res.send({ admin: isAdmin });
-    });
-
     // Add Products Api
     app.post("/products", async (req, res) => {
       const query = req.body;
