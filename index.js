@@ -41,7 +41,9 @@ async function run() {
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
     const paymentCollection = client.db("manufacturer").collection("payment");
-
+    const myProfileCollection = client
+      .db("manufacturer")
+      .collection("myprofile");
 
     // Get All Products
     app.get("/products", async (req, res) => {
@@ -65,8 +67,8 @@ async function run() {
       const updatedDoc = {
         $set: {
           stock: newQuantity.quantity,
-        }
-      }
+        },
+      };
       const updateStock = await productCollections.updateOne(
         filter,
         updatedDoc,
@@ -213,11 +215,15 @@ async function run() {
       };
 
       const result = await paymentCollection.insertOne(payment);
-      const updateOrder = await ordersCollections.updateOne(
-        filter,
-        updatedDoc
-      );
+      const updateOrder = await ordersCollections.updateOne(filter, updatedDoc);
       res.send(updateOrder);
+    });
+
+    // My profile
+    app.post("/myProfile", async (req, res) => {
+      const query = req.body;
+      const profile = await myProfileCollection.insertOne(query);
+      res.send(profile);
     });
   } finally {
   }
