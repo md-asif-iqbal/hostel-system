@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 const cors = require("cors");
 require("dotenv").config();
 app.use(express.json());
@@ -72,7 +72,7 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          stock: newQuantity.quantity,
+          stock: newQuantity.stock,
         },
       };
       const updateStock = await productCollections.updateOne(
