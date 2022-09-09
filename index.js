@@ -44,7 +44,6 @@ async function run() {
     const myProfileCollection = client
       .db("manufacturer")
       .collection("myprofile");
-
     // Get All Products
     app.get("/products", async (req, res) => {
       const query = req.body;
