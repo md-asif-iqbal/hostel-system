@@ -43,7 +43,7 @@ async function run() {
     const paymentCollection = client.db("manufacturer").collection("payment");
     const myProfileCollection = client
       .db("manufacturer")
-      .collection("myprofile");
+      .collection("myprofile")
     // Get All Products
     app.get("/products", async (req, res) => {
       const query = req.body;
@@ -219,9 +219,36 @@ async function run() {
         },
       };
 
+
+    
       const result = await paymentCollection.insertOne(payment);
       const updateOrder = await ordersCollections.updateOne(filter, updatedDoc);
       res.send(updateOrder);
+    });
+
+    // Get all User 
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const users = await usersCollection.findOne(query);
+      res.send(users);
+    });
+    // update User 
+    app.put("/user/update/:email", async (req, res) => {
+      const email = req.params.email;
+      const userInfo = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: userInfo,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
+      res.send(result);
     });
   } finally {
   }
