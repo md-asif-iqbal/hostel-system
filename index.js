@@ -6,7 +6,7 @@ require("dotenv").config();
 app.use(express.json());
 const jwt = require("jsonwebtoken");
 app.use(cors());
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')('sk_test_51LXS98B5Y3AeAE8ixEr3XbAzakqMdCNqxsU9YIZyhx8IaSGdcIaHNUdF4zPSaludDIIwz7kxSsnL6bcAkD4EUURB00BKYOJvq7');
 // Database connection
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { get } = require("express/lib/response");
@@ -41,6 +41,7 @@ async function run() {
     const ordersCollections = client.db("manufacturer").collection("orders");
     const usersCollection = client.db("manufacturer").collection("users");
     const paymentCollection = client.db("manufacturer").collection("payment");
+    const BlogsColection = client.db("manufacturer").collection("Blogs");
     const myProfileCollection = client
       .db("manufacturer")
       .collection("myprofile")
@@ -196,35 +197,31 @@ async function run() {
       const addProducts = await productCollections.insertOne(query);
       res.send(addProducts);
     });
+
+    app.put("/orders/paid/:id", async (req, res) => {
+      const id = req.params.id;
+      const update = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: { status: update.status },
+      };
+      const result = await ordersCollections.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // intent a payment
-    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+
+    app.post('/create-payment-intent', async (req, res) => {
       const service = req.body;
-      const price = service.price;
+      const price = service.amount;
       const amount = price * 100;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: "usd",
-        payment_method_types: ["card"],
-      });
-      res.send({ clientSecret: paymentIntent.client_secret });
-    });
-    app.patch("/myOrders/:id", verifyJWT, async (req, res) => {
-      const id = req.params.id;
-      const payment = req.body;
-      const filter = { _id: ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          paid: true,
-          transactionId: payment.transactionId,
-        },
-      };
-
-
-    
-      const result = await paymentCollection.insertOne(payment);
-      const updateOrder = await ordersCollections.updateOne(filter, updatedDoc);
-      res.send(updateOrder);
-    });
+        currency: 'usd',
+        payment_method_types: ['card']
+      })
+      res.send({ clientSecret: paymentIntent.client_secret })
+    })
 
     // Get all User 
 
@@ -249,6 +246,18 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    // Blogs Section 
+    app.get("/blogs", async (req, res) => {
+      const query = req.body;
+      const blogs = await BlogsColection.find(query).toArray();
+      res.send(blogs);
+    });
+    app.post("/blogs", async (req, res) => {
+      const query = req.body;
+      const blogs = await BlogsColection.insertOne(query);
+      res.send(blogs);
     });
   } finally {
   }
