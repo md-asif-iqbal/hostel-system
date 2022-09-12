@@ -110,15 +110,10 @@ async function run() {
     // ordersCollections find order email address
     app.get("/myitems", async (req, res) => {
       const email = req.query.email;
-      const decodedEmail = req.decoded.email;
-      if (email === decodedEmail) {
-        const query = { email: email };
-        const cursor = ordersCollections.find(query);
-        const result = await cursor.toArray();
-        return res.send(result);
-      } else {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+      const query = { email: email };
+      const cursor = ordersCollections.find(query);
+      const result = await cursor.toArray();
+      return res.send(result);
     });
 
     app.get("/myOrders/:id", verifyJWT, async (req, res) => {
