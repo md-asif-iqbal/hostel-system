@@ -108,7 +108,7 @@ async function run() {
       res.send(orders);
     });
     // ordersCollections find order email address
-    app.get("/myitems", verifyJWT, async (req, res) => {
+    app.get("/myitems", async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
       if (email === decodedEmail) {
