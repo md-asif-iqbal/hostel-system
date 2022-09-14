@@ -152,7 +152,8 @@ async function run() {
     });
     // get users
     app.get("/user", async (req, res) => {
-      const users = await usersCollection.find().toArray();
+      const query = req.body
+      const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
 
