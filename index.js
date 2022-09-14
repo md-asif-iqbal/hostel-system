@@ -107,6 +107,7 @@ async function run() {
       const orders = await ordersCollections.find(query).toArray();
       res.send(orders);
     });
+
     // ordersCollections find order email address
     app.get("/myitems", async (req, res) => {
       const email = req.query.email;
@@ -157,6 +158,13 @@ async function run() {
       res.send(users);
     });
 
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
+    });
+
     // Admin Api
 
     const verifyAdmin = async (req, res, next) => {
@@ -180,6 +188,7 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+    
     // admin
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
@@ -200,6 +209,17 @@ async function run() {
       const filter = { _id: ObjectId(id) };
       const updateDoc = {
         $set: { status: update.status },
+      };
+      const result = await ordersCollections.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+  
+    app.put("/orders/shipped/:id", async (req, res) => {
+      const id = req.params.id;
+      const update = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "Shipped" },
       };
       const result = await ordersCollections.updateOne(filter, updateDoc);
       res.send(result);
