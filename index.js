@@ -6,19 +6,11 @@ require("dotenv").config();
 app.use(express.json());
 const jwt = require("jsonwebtoken");
 app.use(cors());
-const stripe = require('stripe')('sk_test_51LXS98B5Y3AeAE8ixEr3XbAzakqMdCNqxsU9YIZyhx8IaSGdcIaHNUdF4zPSaludDIIwz7kxSsnL6bcAkD4EUURB00BKYOJvq7');
-// Database connection
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { get } = require("express/lib/response");
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.imtr4p9.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1,
-});
+const stripe = require("stripe")(
+  "sk_test_51LXS98B5Y3AeAE8ixEr3XbAzakqMdCNqxsU9YIZyhx8IaSGdcIaHNUdF4zPSaludDIIwz7kxSsnL6bcAkD4EUURB00BKYOJvq7"
+);
 
-// verify jwt token
-
+// JWT Token here
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -33,104 +25,24 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
+// Database connection
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.98ud0qo.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverApi: ServerApiVersion.v1,
+});
 async function run() {
   try {
     await client.connect();
-    const productCollections = client.db("manufacturer").collection("product");
-    const reviewsCollections = client.db("manufacturer").collection("reviews");
-    const ordersCollections = client.db("manufacturer").collection("orders");
-    const usersCollection = client.db("manufacturer").collection("users");
-    const paymentCollection = client.db("manufacturer").collection("payment");
-    const BlogsColection = client.db("manufacturer").collection("Blogs");
-    const myProfileCollection = client
-      .db("manufacturer")
-      .collection("myprofile")
-    // Get All Products
-    app.get("/products", async (req, res) => {
-      const query = req.body;
-      const products = await productCollections.find(query).toArray();
-      res.send(products);
-    });
-    // Purchase Api
-    app.get("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const productId = await productCollections.findOne(query);
-      res.send(productId);
-    });
-    app.delete("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const deletProduct = await productCollections.deleteOne(query);
-      res.send(deletProduct);
-    });
-    // Update Products
-    app.put("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const newQuantity = req.body;
-      const filter = { _id: ObjectId(id) };
-      const options = { upsert: true };
-      const updatedDoc = {
-        $set: {
-          stock: newQuantity.stock,
-        },
-      };
-      const updateStock = await productCollections.updateOne(
-        filter,
-        updatedDoc,
-        options
-      );
+    const bookingCollection = client.db("Hostel").collection("Booking");
+    const RoomCollection = client.db("Hostel").collection("Room");
+    const FoodCollection = client.db("Hostel").collection("Food");
+    const mealsCollection = client.db("Hostel").collection("Meals");
+    const usersCollection = client.db("Hostel").collection("User");
 
-      res.send(updateStock);
-    });
-    // Reviews
-    app.get("/review", async (req, res) => {
-      const query = req.body;
-      const review = await reviewsCollections.find(query).toArray();
-      res.send(review);
-    });
-    // review post
-    app.post("/review", async (req, res) => {
-      const query = req.body;
-      const reviews = await reviewsCollections.insertOne(query);
-      res.send(reviews);
-    });
-    // Orders Collection post order
-    app.post("/myOrders", async (req, res) => {
-      const query = req.body;
-      const order = await ordersCollections.insertOne(query);
-      res.send(order);
-    });
-    // get orders ordersCollections
-    app.get("/myOrders", async (req, res) => {
-      const query = req.body;
-      const orders = await ordersCollections.find(query).toArray();
-      res.send(orders);
-    });
-
-    // ordersCollections find order email address
-    app.get("/myitems", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-      const cursor = ordersCollections.find(query);
-      const result = await cursor.toArray();
-      return res.send(result);
-    });
-
-    app.get("/myOrders/:id", verifyJWT, async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const booking = await ordersCollections.findOne(query);
-      res.send(booking);
-    });
-    // Delet user orders
-    app.delete("/myOrders/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const deletProduct = await ordersCollections.deleteOne(query);
-      res.send(deletProduct);
-    });
-    // Get a admin api
+    // User Access Token
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -144,43 +56,90 @@ async function run() {
         updateDoc,
         options
       );
+      const results = await mealsCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: "10h" }
       );
-      res.send({ result, token });
-    });
-    // get users
-    app.get("/user", async (req, res) => {
-      const query = req.body
-      const users = await usersCollection.find(query).toArray();
-      res.send(users);
+      res.send({ result, results, token });
     });
 
-    app.delete("/user/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const deleteUser = await usersCollection.deleteOne(query);
-      res.send(deleteUser);
-    });
-
-    // Admin Api
-
+    // use Admin Function
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
       const requesterAccount = await usersCollection.findOne({
         email: requester,
       });
+      console.log(requesterAccount);
       if (requesterAccount.role === "admin") {
         next();
       } else {
         res.status(403).send({ message: "forbidden" });
       }
     };
-    //  set Admin
+    // user Update Profile
+    app.get("/users", verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+      if (email === decodedEmail) {
+        const quary = { email: email };
+        const purchased = await usersCollection.find(quary).toArray();
+        res.send(purchased);
+      } else {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+    });
+    app.get("/users/:email", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      const email = req.params.email;
+      if (email === decodedEmail) {
+        const query = { email: email };
+        const user = await usersCollection.findOne(query);
+        res.send(user);
+      } else {
+        res.status(403).send({ message: "Forbidden Access!" });
+      }
+    });
+    // Update user..........
+
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const profile = req.body;
+      console.log(profile);
+
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          name: profile.name,
+          image: profile.img,
+          number: profile.number,
+          education: profile.education,
+          location: profile.location,
+        },
+      };
+
+      const result = await usersCollection.updateOne(filter, updateDoc);
+
+      res.send(result);
+    });
+
+    // admin here========
+    app.get("/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
+    });
+    // -----user admin email find-------
     app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
+      console.log(email);
       const filter = { email: email };
       const updateDoc = {
         $set: { role: "admin" },
@@ -188,19 +147,89 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    
-    // admin
+
+    // admin here========
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await usersCollection.findOne({ email: email });
       const isAdmin = user.role === "admin";
       res.send({ admin: isAdmin });
     });
-    // Add Products Api
-    app.post("/products", async (req, res) => {
+    // -----user admin email find-------
+    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: "admin" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.get("/myitems", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = bookingCollection.find(query);
+      const result = await cursor.toArray();
+      return res.send(result);
+    });
+
+    // Booking Collection ==============
+    app.post("/booking", async (req, res) => {
       const query = req.body;
-      const addProducts = await productCollections.insertOne(query);
-      res.send(addProducts);
+      const reviews = await bookingCollection.insertOne(query);
+      res.send(reviews);
+    });
+
+    app.post("/users", async (req, res) => {
+      const query = req.body;
+      const user = await usersCollection.insertOne(query);
+      res.send(user);
+    });
+    app.post("/room", verifyJWT, async (req, res) => {
+      const products = req.body;
+      const result = await RoomCollection.insertOne(products);
+      return res.send({ success: true, result });
+    });
+
+    app.get("/room", async (req, res) => {
+      const query = req.body;
+      const room = await RoomCollection.find(query).toArray();
+      res.send(room);
+    });
+    app.delete("/room/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const products = await RoomCollection.deleteOne(query);
+      res.send(products);
+    });
+    // Purchase Api
+    app.get("/room/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const roomId = await RoomCollection.findOne(query);
+      res.send(roomId);
+    });
+    // Food Collection Here
+    app.get("/food", async (req, res) => {
+      const query = req.body;
+      const food = await FoodCollection.find(query).toArray();
+      res.send(food);
+    });
+    // Single Food Details
+    app.get("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const FoodId = await FoodCollection.findOne(query);
+      res.send(FoodId);
+    });
+
+    app.post("/booking", async (req, res) => {
+      const query = req.body;
+      const reviews = await bookingCollection.insertOne(query);
+      res.send(reviews);
     });
 
     app.put("/orders/paid/:id", async (req, res) => {
@@ -210,71 +239,84 @@ async function run() {
       const updateDoc = {
         $set: { status: update.status },
       };
-      const result = await ordersCollections.updateOne(filter, updateDoc);
+      const result = await bookingCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-  
-    app.put("/orders/shipped/:id", async (req, res) => {
+    app.delete("/purchase/:id", async (req, res) => {
       const id = req.params.id;
-      const update = req.body;
-      const filter = { _id: ObjectId(id) };
-      const updateDoc = {
-        $set: { status: "Shipped" },
-      };
-      const result = await ordersCollections.updateOne(filter, updateDoc);
+      const query = { _id: ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });
 
-    // intent a payment
-
-    app.post('/create-payment-intent', async (req, res) => {
+    app.post("/create-payment-intent", async (req, res) => {
       const service = req.body;
       const price = service.amount;
       const amount = price * 100;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: 'usd',
-        payment_method_types: ['card']
-      })
-      res.send({ clientSecret: paymentIntent.client_secret })
-    })
-
-    // Get all User 
-
-    app.get("/user/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const users = await usersCollection.findOne(query);
-      res.send(users);
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
     });
-    // update User 
-    app.put("/user/update/:email", async (req, res) => {
+
+    // app.put("/meals/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const update = req.body;
+    //   const filter = { email: email };
+    //   const updateDoc = {
+    //     $set: {
+    //       date: {
+    //         date: update.date,
+    //         moring: update.morning,
+    //         lunch: update.lunch,
+    //         dinner: update.dinner,
+    //       },
+    //     },
+    //   };
+    //   const result = await mealsCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
+    app.post("/meals/:email", async (req, res) => {
       const email = req.params.email;
-      const userInfo = req.body;
+      const update = req.body;
       const filter = { email: email };
-      const options = { upsert: true };
-      const updateUser = {
-        $set: userInfo,
+      const updateDoc = {
+        $set: {
+          $date: {
+            date: update.date,
+            moring: update.morning,
+            lunch: update.lunch,
+            dinner: update.dinner,
+          },
+        },
       };
-      const result = await usersCollection.updateOne(
-        filter,
-        updateUser,
-        options
-      );
+      const result = await mealsCollection.insertOne(filter, updateDoc);
       res.send(result);
     });
 
-    // Blogs Section 
-    app.get("/blogs", async (req, res) => {
-      const query = req.body;
-      const blogs = await BlogsColection.find(query).toArray();
-      res.send(blogs);
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const profile = req.body;
+      console.log(profile);
+
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          moring: profile.name,
+          lunch: profile.img,
+          dinner: profile.number,
+        },
+      };
+
+      const result = await usersCollection.updateOne(filter, updateDoc);
+
+      res.send(result);
     });
-    app.post("/blogs", async (req, res) => {
-      const query = req.body;
-      const blogs = await BlogsColection.insertOne(query);
-      res.send(blogs);
-    });
+
+
   } finally {
   }
 }
@@ -285,5 +327,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`uiu listening on port ${port}`);
 });
