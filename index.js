@@ -49,24 +49,27 @@ async function run() {
       const filter = { email: email };
       const options = { upsert: true };
       const updateDoc = {
-        $set: user,
+        $set: {
+          name: user.name,
+          email: user.email,
+        },
       };
       const result = await usersCollection.updateOne(
         filter,
         updateDoc,
         options
       );
-      const results = await mealsCollection.updateOne(
-        filter,
-        updateDoc,
-        options
-      );
+      // const results = await mealsCollection.updateOne(
+      //   filter,
+      //   updateDoc,
+      //   options
+      // );
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "10h" }
+        { expiresIn: "1d" }
       );
-      res.send({ result, results, token });
+      res.send({ result, token });
     });
 
     // use Admin Function
@@ -107,7 +110,7 @@ async function run() {
     });
     // Update user..........
 
-    app.put("/users/:email", async (req, res) => {
+    app.put("/users/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       console.log(email);
       const profile = req.body;
@@ -132,8 +135,9 @@ async function run() {
     // admin here========
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
-      const user = await usersCollection.findOne({ email: email });
-      const isAdmin = user.role === "admin";
+      const users = await usersCollection.findOne({ email: email });
+      console.log(users);
+      const isAdmin = users.user === "admin";
       res.send({ admin: isAdmin });
     });
     // -----user admin email find-------
@@ -142,19 +146,14 @@ async function run() {
       console.log(email);
       const filter = { email: email };
       const updateDoc = {
-        $set: { role: "admin" },
+        $set: { user: "admin" },
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
     // admin here========
-    app.get("/admin/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = await usersCollection.findOne({ email: email });
-      const isAdmin = user.role === "admin";
-      res.send({ admin: isAdmin });
-    });
+
     // -----user admin email find-------
     app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
@@ -226,10 +225,17 @@ async function run() {
       res.send(FoodId);
     });
 
-    app.post("/booking", async (req, res) => {
+    app.get("/booking", async (req, res) => {
       const query = req.body;
-      const reviews = await bookingCollection.insertOne(query);
+      const reviews = await bookingCollection.find(query).toArray();
       res.send(reviews);
+    });
+
+    app.delete("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const book = await bookingCollection.deleteOne(query);
+      res.send(book);
     });
 
     app.put("/orders/paid/:id", async (req, res) => {
@@ -242,6 +248,7 @@ async function run() {
       const result = await bookingCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
     app.delete("/purchase/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -278,22 +285,15 @@ async function run() {
     //   const result = await mealsCollection.updateOne(filter, updateDoc);
     //   res.send(result);
     // });
-    app.post("/meals/:email", async (req, res) => {
-      const email = req.params.email;
+    app.post("/meals", async (req, res) => {
       const update = req.body;
-      const filter = { email: email };
-      const updateDoc = {
-        $set: {
-          $date: {
-            date: update.date,
-            moring: update.morning,
-            lunch: update.lunch,
-            dinner: update.dinner,
-          },
-        },
-      };
-      const result = await mealsCollection.insertOne(filter, updateDoc);
+      const result = await mealsCollection.insertOne(update);
       res.send(result);
+    });
+    app.get("/meals", async (req, res) => {
+      const query = req.body;
+      const meal = await mealsCollection.find(query).toArray();
+      res.send(meal);
     });
 
     app.put("/users/:email", async (req, res) => {
@@ -315,8 +315,6 @@ async function run() {
 
       res.send(result);
     });
-
-
   } finally {
   }
 }
