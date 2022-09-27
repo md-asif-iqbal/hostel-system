@@ -140,31 +140,8 @@ async function run() {
       const isAdmin = users.user === "admin";
       res.send({ admin: isAdmin });
     });
-    // -----user admin email find-------
-    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
-      const email = req.params.email;
-      console.log(email);
-      const filter = { email: email };
-      const updateDoc = {
-        $set: { user: "admin" },
-      };
-      const result = await usersCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
-
-    // admin here========
-
-    // -----user admin email find-------
-    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
-      const email = req.params.email;
-      console.log(email);
-      const filter = { email: email };
-      const updateDoc = {
-        $set: { role: "admin" },
-      };
-      const result = await usersCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
+   
+    // admin here======
 
     app.get("/myitems", async (req, res) => {
       const email = req.query.email;
