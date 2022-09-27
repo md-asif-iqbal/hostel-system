@@ -268,23 +268,6 @@ async function run() {
       res.send({ clientSecret: paymentIntent.client_secret });
     });
 
-    // app.put("/meals/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const update = req.body;
-    //   const filter = { email: email };
-    //   const updateDoc = {
-    //     $set: {
-    //       date: {
-    //         date: update.date,
-    //         moring: update.morning,
-    //         lunch: update.lunch,
-    //         dinner: update.dinner,
-    //       },
-    //     },
-    //   };
-    //   const result = await mealsCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
     app.post("/meals", async (req, res) => {
       const update = req.body;
       const result = await mealsCollection.insertOne(update);
